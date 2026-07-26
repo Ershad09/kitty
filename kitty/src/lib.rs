@@ -1,11 +1,9 @@
-
+use clap::Parser;
 use std::{
     fs::File,
-    io::{self, BufReader},
+    io::{self, BufReader, Read},
     path::{Path, PathBuf},
 };
-
-use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -18,14 +16,18 @@ pub struct Args {
 }
 
 pub fn print_file(path: &Path) -> io::Result<()> {
-    let file = File::open(path)?;
+    
+    let reader: Box<dyn Read> = if path == Path::new("-") {
+        Box::new(io::stdin().lock())
+    } else {
+        Box::new(File::open(path)?)
+    };
 
-    let mut reader = BufReader::new(file);
-
+    let mut buf_reader = BufReader::new(reader);
     let stdout = io::stdout();
     let mut handle = stdout.lock();
 
-    io::copy(&mut reader, &mut handle)?;
+    io::copy(&mut buf_reader, &mut handle)?;
 
     Ok(())
 }

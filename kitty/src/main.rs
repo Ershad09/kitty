@@ -1,23 +1,19 @@
 use clap::Parser;
-use kitty::{Args, print_file};
-use std::{eprintln, path::PathBuf, process};
+use kitty::{cli::Args, io::print::print_file};
+use std::{path::Path, process};
 
 fn main() {
-    let mut args = Args::parse();
-
-    if args.file.is_empty() {
-        args.file.push(PathBuf::from("-"));
-    }
+    let args = Args::parse();
 
     for file in &args.file {
         if let Err(error) = print_file(file) {
-            let display_name = if file == &PathBuf::from("-") {
-                "<stdin>".to_string()
+            let display_name = if file == Path::new("-") {
+                "<stdin>"
             } else {
-                file.display().to_string()
+                file.to_str().unwrap_or("")
             };
 
-            eprintln!("Kitty: {}: {}", display_name, error);
+            eprintln!("kitty: {}: {}", display_name, error);
             process::exit(1);
         }
     }

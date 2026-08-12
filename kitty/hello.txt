@@ -1,0 +1,11 @@
+The quick brown fox jumps over the lazy dog.
+Rust makes building fast command line tools fun.
+Using buffered readers helps handle file inputs efficiently.
+
+Standard input streams allow piping output seamlessly between applications.
+
+Formatting line numbers with right alignment keeps terminal output clean.
+Handling broken pipe errors gracefully prevents unnecessary error noise.
+
+Clap makes command line argument parsing clean and straightforward.
+Testing code with various inputs ensures edge cases are covered.

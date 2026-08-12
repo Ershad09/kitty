@@ -10,4 +10,10 @@ use std::path::PathBuf;
 pub struct Args {
     #[arg(default_value = "-")]
     pub file: Vec<PathBuf>,
+
+    #[arg(short = 'n', long = "number")]
+    pub number: bool,
+
+    #[arg(short = 'b', long = "number-nonblank")]
+    pub number_nonblank: bool,
 }

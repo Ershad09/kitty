@@ -3,7 +3,10 @@ use kitty::{cli::Args, io::print::print_file};
 use std::{path::Path, process};
 
 fn main() {
-    let args = Args::parse();
+    let mut args = Args::parse();
+
+    args.normalize();
+
     let mut exit_code = 0;
 
     for file in &args.file {

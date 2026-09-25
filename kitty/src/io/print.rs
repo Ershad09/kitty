@@ -14,6 +14,12 @@ pub fn print_file(path: &Path, args: &Args) -> io::Result<()> {
 
     let stdout = io::stdout();
 
+    print_reader(reader, stdout.lock(), args)
+}
+
+fn print_reader<R: Read, W: Write>(reader: R, writer: W, args: &Args) -> io::Result<()> {
+    let mut writer = writer;
+
     if !args.number
         && !args.number_nonblank
         && !args.squeeze_blank
@@ -21,15 +27,14 @@ pub fn print_file(path: &Path, args: &Args) -> io::Result<()> {
         && !args.show_tabs
         && !args.show_nonprinting
     {
-        let mut mut_reader = reader;
-        let mut handle = stdout.lock();
+        let mut reader = reader;
 
-        io::copy(&mut mut_reader, &mut handle)?;
+        io::copy(&mut reader, &mut writer)?;
         return Ok(());
     }
 
     let mut buffered_reader = BufReader::new(reader);
-    let mut writer = BufWriter::new(stdout.lock());
+    let mut writer = BufWriter::new(writer);
 
     let mut line_number: u64 = 1;
     let mut line_buf = Vec::new();
@@ -37,7 +42,9 @@ pub fn print_file(path: &Path, args: &Args) -> io::Result<()> {
 
     loop {
         line_buf.clear();
+
         let bytes_read = buffered_reader.read_until(b'\n', &mut line_buf)?;
+
         if bytes_read == 0 {
             break;
         }
@@ -49,6 +56,7 @@ pub fn print_file(path: &Path, args: &Args) -> io::Result<()> {
                 if prev_was_empty {
                     continue;
                 }
+
                 prev_was_empty = true;
             } else {
                 prev_was_empty = false;
@@ -74,6 +82,7 @@ pub fn print_file(path: &Path, args: &Args) -> io::Result<()> {
                         writer.write_all(&[b'\t'])?;
                     }
                 }
+
                 b'\n' => {
                     if args.show_ends {
                         writer.write_all(b"$\n")?;
@@ -81,6 +90,7 @@ pub fn print_file(path: &Path, args: &Args) -> io::Result<()> {
                         writer.write_all(&[b'\n'])?;
                     }
                 }
+
                 _ => {
                     if args.show_nonprinting {
                         format_nonprinting(byte, &mut writer)?;
@@ -99,6 +109,7 @@ pub fn print_file(path: &Path, args: &Args) -> io::Result<()> {
 
 fn format_nonprinting<W: Write>(byte: u8, writer: &mut W) -> io::Result<()> {
     let mut b = byte;
+
     if b >= 128 {
         writer.write_all(b"M-")?;
         b -= 128;
@@ -111,5 +122,9 @@ fn format_nonprinting<W: Write>(byte: u8, writer: &mut W) -> io::Result<()> {
     } else {
         writer.write_all(&[b])?;
     }
+
     Ok(())
 }
+
+#[cfg(test)]
+mod print_test;
